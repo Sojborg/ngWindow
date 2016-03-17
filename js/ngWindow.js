@@ -131,69 +131,16 @@
                     __PRIVATE__: privateMethods,
 
                     open: function (opts) {
-                        var windowId = null;
-                        opts = opts || {};
-                        if (openOnePerName && opts.name) {
-                            windowId = opts.name+' window';
-                            if (this.isOpen(windowId)) {
-                                return;
-                            }
-                        }
-                        var options = angular.copy(defaults);
-                        var localID = ++globalID;
-                        windowId = windowId || 'ngwindow' + localID;
-                        openIdStack.push(windowId);
+                        
+                            var template = '<div class="ngwindow-minimize-btn">ngWindow!!</div>';                            
 
-                        angular.extend(options, opts);
-
-                        var defer;
-                        defers[windowId] = defer = $q.defer();
-
-                        var scope;
-                        scopes[windowId] = scope = angular.isObject(options.scope) ? options.scope.$new() : $rootScope.$new();
-
-                        var $window;
-
-                        var resolve = angular.extend({}, options.resolve);
-
-                        angular.forEach(resolve, function (value, key) {
-                            resolve[key] = angular.isString(value) ? $injector.get(value) : $injector.invoke(value, null, null, key);
-                        });
-
-                        $q.all({
-                            template: loadTemplate(options.template || options.templateUrl),
-                            locals: $q.all(resolve)
-                        }).then(function (setup) {
-                            var template = setup.template,
-                                locals = setup.locals;
-
-                            if (options.showClose) {
-                                template += '<div class="ngwindow-close"></div>';
-                            }
-
-                            if (options.showMinimize) {
-                                template += '<div class="ngwindow-minimize-btn"></div>';
-                            }
-
-                            $window = $el('<div id="'+windowId + '" class="ngwindow"></div>');
+                            var $window = angular.element('<div id="ngWindow" class="ngwindow"></div>');
                             $window.html(('<div class="ngwindow-content" role="document">' + template + '</div>'));
-
-                            $window.data('$ngWindowOptions', options);
-
-                            scope.ngWindowId = windowId;
-
-                            windowsCount += 1;
-
+                            
+                            var body = $document.find('body');
+                            body.append($window);
+                            
                             return publicMethods;
-                        });
-
-                        return {
-                            id: windowId,
-                            closePromise: defer.promise,
-                            close: function (value) {
-                                privateMethods.closeWindow($window, value);
-                            }
-                        };
                     },
                     
                     close: function (id, value) {
@@ -273,19 +220,6 @@
                         return defaults;
                     }
                 };
-
-                angular.forEach(
-                    ['html', 'body'],
-                    function(elementName) {
-                        $elements[elementName] = $document.find(elementName);
-                        if (forceElementsReload[elementName]) {
-                            var eventName = privateMethods.getRouterLocationEventName();
-                            $rootScope.$on(eventName, function () {
-                                $elements[elementName] = $document.find(elementName);
-                            });
-                        }
-                    }
-                );
 
                 return publicMethods;
             }];
