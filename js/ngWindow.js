@@ -40,6 +40,14 @@
                     closeWindow: function ($window, value) {
                         
                     },
+                    
+                    windowClickedEvent: function(event) {
+                        var isMinimizeButton = angular.element(event.target).hasClass('ngwindow-minimize-btn');
+                        
+                        if (isMinimizeButton) {
+                            publicMethods.minimize('ngWindow', 'testing');
+                        }                          
+                    },
 
                     showWindow: function($window) {
                         $window.css({
@@ -130,17 +138,18 @@
                 var publicMethods = {
                     __PRIVATE__: privateMethods,
 
-                    open: function (opts) {
-                        
-                            var template = '<div class="ngwindow-minimize-btn">ngWindow!!</div>';                            
+                    open: function (opts) {                    
+                        var template = '<div class="ngwindow-minimize-btn"></div>';                            
 
-                            var $window = angular.element('<div id="ngWindow" class="ngwindow"></div>');
-                            $window.html(('<div class="ngwindow-content" role="document">' + template + '</div>'));
-                            
-                            var body = $document.find('body');
-                            body.append($window);
-                            
-                            return publicMethods;
+                        var $window = angular.element('<div id="ngWindow" class="ngwindow"></div>');
+                        $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + template + '</div>'));
+                        
+                        $window.bind('click', privateMethods.windowClickedEvent);
+                        
+                        var body = $document.find('body');
+                        body.append($window);                           
+                        
+                        return publicMethods;
                     },
                     
                     close: function (id, value) {
@@ -208,7 +217,7 @@
                         minimizedElement.append(maximizeButton);
                         minimizedElement.append(closeButton);
                         
-                        $elements.body.append(minimizedElement);
+                        $document.find('body').append(minimizedElement);
                         privateMethods.rearrangeMinimizedElements();
                     },
 
