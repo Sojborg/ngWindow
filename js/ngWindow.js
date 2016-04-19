@@ -28,7 +28,7 @@
     var $el = angular.element;
     var openIdStack = [];
     var openMinimizedIdStack = [];
-
+    var clickedWindowHandler;
 
     m.provider('ngWindow', function () {
         
@@ -38,14 +38,19 @@
 
                 var privateMethods = {
                     closeWindow: function ($window, value) {
-                        
+                            
                     },
                     
-                    windowClickedEvent: function(event) {
+                    windowClickedEvent: function(event, windowId) {
+                        var isCloseButton = angular.element(event.target).hasClass('ngwindow-close');
                         var isMinimizeButton = angular.element(event.target).hasClass('ngwindow-minimize-btn');
                         
+                        if (isCloseButton) {
+                            publicMethods.close(windowId, 'testing');   
+                        }                        
+                        
                         if (isMinimizeButton) {
-                            publicMethods.minimize('ngWindow', 'testing');
+                            publicMethods.minimize(windowId, 'testing');
                         }                          
                     },
 
@@ -138,25 +143,36 @@
                 var publicMethods = {
                     __PRIVATE__: privateMethods,
 
-                    open: function (opts) {                    
-                        var template = '<div class="ngwindow-minimize-btn"></div>';                            
-
-                        var $window = angular.element('<div id="ngWindow" class="ngwindow"></div>');
-                        $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + template + '</div>'));
+                    open: function (opts) {
+                        var closeBtn = `<div class="ngwindow-close"></div>`;          
+                        var minimizeBtn = `<div class="ngwindow-minimize-btn"></div>`;
                         
-                        $window.bind('click', privateMethods.windowClickedEvent);
+                        var id = openIdStack.length+2;
+                        var windowId = `ngWindow${id}`;     
+                        openIdStack.push(windowId);                                 
+
+                        var $window = angular.element(`<div id="${windowId}" class="ngwindow"></div>`);
+                        $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + minimizeBtn + closeBtn + '</div>'));
+                        
+                        clickedWindowHandler = function(event) {
+                            privateMethods.windowClickedEvent(event, $window.attr('id'));
+                        }    
+                        
+                        $window.bind('click', clickedWindowHandler);
                         
                         var body = $document.find('body');
-                        body.append($window);                           
+                        body.append($window);                       
                         
                         return publicMethods;
                     },
                     
                     close: function (id, value) {
-                        var $window = $el(document.getElementById(id));
+                        var $window = $el(document.getElementById(id));                        
 
-                        if ($window.length) {
+                        if ($window.length) {                            
                             privateMethods.closeWindow($window, value);
+                            var removeIndex = openIdStack.indexOf(id);
+                            openIdStack.splice(removeIndex, 1);
                         }
 
                         return publicMethods;
