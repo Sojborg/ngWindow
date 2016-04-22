@@ -18,8 +18,22 @@
     app.controller('MainCtrl', function($scope, ngWindow) {
         
         $scope.openWindow = function () {
-            ngWindow.open();
+            ngWindow.open({
+                template: "<mytest></mytest>",
+                plain: true,
+                scope: $scope
+            });
         }        
+    });
+    
+    app.directive('mytest', function() {
+        return {
+            restrict: 'E',
+            template: '<div>mytesting</div>',
+            link: function(scope, element, attrs) {
+                
+            }
+        }
     });
     
 </script>

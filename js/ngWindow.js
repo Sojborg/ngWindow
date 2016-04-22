@@ -143,25 +143,55 @@
                 var publicMethods = {
                     __PRIVATE__: privateMethods,
 
-                    open: function (opts) {
+                    open: function (options) {
+                        var template = loadTemplate(options.template);
                         var closeBtn = `<div class="ngwindow-close"></div>`;          
+                        template += closeBtn;
+                        
                         var minimizeBtn = `<div class="ngwindow-minimize-btn"></div>`;
+                        template += minimizeBtn;
                         
                         var id = openIdStack.length+2;
                         var windowId = `ngWindow${id}`;     
                         openIdStack.push(windowId);                                 
 
                         var $window = angular.element(`<div id="${windowId}" class="ngwindow"></div>`);
-                        $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + minimizeBtn + closeBtn + '</div>'));
+                        $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + template + '</div>'));
                         
                         clickedWindowHandler = function(event) {
                             privateMethods.windowClickedEvent(event, $window.attr('id'));
                         }    
                         
-                        $window.bind('click', clickedWindowHandler);
+                        $window.bind('click', clickedWindowHandler);                        
                         
+                        $compile($window)(options.scope);
                         var body = $document.find('body');
-                        body.append($window);                       
+                        body.append($window);  
+                        
+                        function loadTemplateUrl (tmpl, config) {
+                            $rootScope.$broadcast('ngDialog.templateLoading', tmpl);
+                            return $http.get(tmpl, (config || {})).then(function(res) {
+                                $rootScope.$broadcast('ngDialog.templateLoaded', tmpl);
+                                return res.data || '';
+                            });
+                        }
+
+                        function loadTemplate (tmpl) {
+                            if (!tmpl) {
+                                return 'Empty template';
+                            }
+
+                            if (angular.isString(tmpl) && options.plain) {
+                                return tmpl;
+                            }
+
+                            if (typeof options.cache === 'boolean' && !options.cache) {
+                                return loadTemplateUrl(tmpl, {cache: false});
+                            }
+
+                            return loadTemplateUrl(tmpl, {cache: $templateCache});
+                        }   
+                                          
                         
                         return publicMethods;
                     },
