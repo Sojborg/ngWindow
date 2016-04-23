@@ -268,7 +268,7 @@
 
                         var closeButton = $el('<div class="ngwindow-minimized-close"></div>');
                         closeButton.bind('click', function (event) {
-                            privateMethods.closeWindow($window, '$closeButton');
+                            privateMethods.closeWindow($window, '$closeButton', id);
                             privateMethods.closeMinimize(minimizedId);
                         });
 
