@@ -58,7 +58,7 @@
                         
                         if (isMinimizeButton) {
                             publicMethods.minimize(windowId, 'testing');
-                        }                          
+                        }       
                     },
 
                     showWindow: function($window) {
@@ -164,8 +164,7 @@
                         openIdStack.push(windowId);
                         
                         var defer;
-                        defers[windowId] = defer = $q.defer();
-                                                         
+                        defers[windowId] = defer = $q.defer();                                                         
 
                         var $window = angular.element(`<div id="${windowId}" class="ngwindow"></div>`);
                         $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + template + '</div>'));
@@ -174,16 +173,16 @@
                             privateMethods.windowClickedEvent(event, $window.attr('id'));
                         }    
                         
-                        $window.bind('click', clickedWindowHandler);                        
+                        $window.bind('click', clickedWindowHandler);                      
                         
                         $compile($window)(options.scope);
                         var body = $document.find('body');
                         body.append($window);  
                         
                         function loadTemplateUrl (tmpl, config) {
-                            $rootScope.$broadcast('ngDialog.templateLoading', tmpl);
+                            $rootScope.$broadcast('ngWindow.templateLoading', tmpl);
                             return $http.get(tmpl, (config || {})).then(function(res) {
-                                $rootScope.$broadcast('ngDialog.templateLoaded', tmpl);
+                                $rootScope.$broadcast('ngWindow.templateLoaded', tmpl);
                                 return res.data || '';
                             });
                         }
@@ -203,7 +202,38 @@
 
                             return loadTemplateUrl(tmpl, {cache: $templateCache});
                         }   
-                                          
+                                                    
+                        var selected = null, 
+                        x_pos = 0, y_pos = 0, 
+                        x_elem = 0, y_elem = 0;
+
+                        function _drag_init(elem) {
+                            selected = elem;
+                            x_elem = x_pos - selected.offsetLeft;
+                            y_elem = y_pos - selected.offsetTop;
+                        }
+                        
+                        var $body = angular.element(document.getElementById(windowId));                                         
+                        $body.bind('mousemove', function(e) {      
+                            x_pos = document.all ? window.event.clientX : e.pageX;
+                            y_pos = document.all ? window.event.clientY : e.pageY;
+                            var isWindow = angular.element(e.target).hasClass('ngwindow-content');
+                            if (isWindow && selected !== null) {
+                                selected.style.left = (x_pos - x_elem) + 'px';
+                                selected.style.top = (y_pos - y_elem) + 'px';
+                            }
+                        });    
+                        
+                        $body.bind('mousedown', function(e) {                            
+                            var isWindow = angular.element(e.target).hasClass('ngwindow-content');   
+                                
+                            if (isWindow) 
+                                _drag_init(document.getElementById(windowId));
+                        });
+                        
+                        $body.bind('mouseup', function(e) {         
+                            selected = null;
+                        });              
                         
                         return {
                             windowId: windowId,

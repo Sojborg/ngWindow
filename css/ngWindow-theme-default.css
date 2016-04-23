@@ -54,6 +54,10 @@
   }
 }
 
+.ngwindow {
+  position: relative;
+}
+
 .ngwindow-closing .ngwindow-content {
   -webkit-animation: ngwindow-flyout .5s;
   animation: ngwindow-flyout .5s;
