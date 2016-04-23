@@ -45,6 +45,7 @@
                            $window: $window 
                         });
                         delete defers[id];
+                        $window.remove();
                     },
                     
                     windowClickedEvent: function(event, windowId) {
