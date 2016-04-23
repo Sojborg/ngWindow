@@ -29,6 +29,7 @@
     var openIdStack = [];
     var openMinimizedIdStack = [];
     var clickedWindowHandler;
+    var defers = {};
 
     m.provider('ngWindow', function () {
         
@@ -37,8 +38,13 @@
                 var $elements = [];
 
                 var privateMethods = {
-                    closeWindow: function ($window, value) {
-                            
+                    closeWindow: function ($window, value, id) {
+                        defers[id].resolve({
+                           id: id,
+                           value: value,
+                           $window: $window 
+                        });
+                        delete defers[id];
                     },
                     
                     windowClickedEvent: function(event, windowId) {
@@ -144,6 +150,7 @@
                     __PRIVATE__: privateMethods,
 
                     open: function (options) {
+                        
                         var template = loadTemplate(options.template);
                         var closeBtn = `<div class="ngwindow-close"></div>`;          
                         template += closeBtn;
@@ -153,7 +160,11 @@
                         
                         var id = openIdStack.length+2;
                         var windowId = `ngWindow${id}`;     
-                        openIdStack.push(windowId);                                 
+                        openIdStack.push(windowId);
+                        
+                        var defer;
+                        defers[windowId] = defer = $q.defer();
+                                                         
 
                         var $window = angular.element(`<div id="${windowId}" class="ngwindow"></div>`);
                         $window.html(('<div class="ngwindow-theme-default ngwindow-content" role="document">' + template + '</div>'));
@@ -193,14 +204,17 @@
                         }   
                                           
                         
-                        return publicMethods;
+                        return {
+                            windowId: windowId,
+                            closePromise: defer.promise                            
+                        }
                     },
                     
                     close: function (id, value) {
                         var $window = $el(document.getElementById(id));                        
 
                         if ($window.length) {                            
-                            privateMethods.closeWindow($window, value);
+                            privateMethods.closeWindow($window, value, id);
                             var removeIndex = openIdStack.indexOf(id);
                             openIdStack.splice(removeIndex, 1);
                         }

@@ -18,10 +18,13 @@
     app.controller('MainCtrl', function($scope, ngWindow) {
         
         $scope.openWindow = function () {
-            ngWindow.open({
+            var window = ngWindow.open({
                 template: "<mytest></mytest>",
                 plain: true,
                 scope: $scope
+            });
+            window.closePromise.then(function() {
+               alert("closed"); 
             });
         }        
     });
