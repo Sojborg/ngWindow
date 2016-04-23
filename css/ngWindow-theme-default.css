@@ -54,11 +54,6 @@
   }
 }
 
- {
-  padding-bottom: 160px;
-  padding-top: 160px;
-}
-
 .ngwindow-closing .ngwindow-content {
   -webkit-animation: ngwindow-flyout .5s;
   animation: ngwindow-flyout .5s;
@@ -78,6 +73,7 @@
   padding: 1em;
   position: relative;
   width: 450px;
+  height: 400px;
 }
 
  .ngwindow-close {
